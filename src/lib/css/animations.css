@@ -95,7 +95,7 @@
 	visibility: hidden;
 
 	&.aos-slide-up {
-		transform: translate3d(0, var(--aos-distance), 0, 0);
+		transform: translate3d(0, var(--aos-distance), 0);
 	}
 
 	&.aos-slide-down {
