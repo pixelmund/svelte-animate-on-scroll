@@ -95,19 +95,19 @@
 	visibility: hidden;
 
 	&.aos-slide-up {
-		transform: translate3d(0, 100%, 0);
+		transform: translate3d(0, var(--aos-distance), 0), 0);
 	}
 
 	&.aos-slide-down {
-		transform: translate3d(0, -100%, 0);
+		transform: translate3d(0, calc(-1 * var(--aos-distance)), 0);
 	}
 
 	&.aos-slide-right {
-		transform: translate3d(-100%, 0, 0);
+		transform: translate3d(calc(-1 * var(--aos-distance)), 0, 0);
 	}
 
 	&.aos-slide-left {
-		transform: translate3d(100%, 0, 0);
+		transform: translate3d(var(--aos-distance), 0, 0);
 	}
 	
 	&.aos-animate {
