@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { type Snippet } from 'svelte';
+	import { tick, type Snippet } from 'svelte';
 	import { type Easing, type Animations, easings, animations } from './css/index.js';
 	import type { HTMLAttributes } from 'svelte/elements';
 
@@ -65,8 +65,11 @@
 		...props
 	}: ContainerProps = $props();
 
-	// Track if we're mounted (client-side) to avoid SSR hydration mismatches
+	// Two-phase mounting to ensure proper CSS transitions:
+	// Phase 1: mounted - adds animation class (sets initial hidden state with transform)
+	// Phase 2: ready - adds transition class (after a frame, so browser can transition from initial state)
 	let mounted = $state(false);
+	let ready = $state(false);
 
 	// Window width tracking for responsive breakpoints
 	let windowWidth = $state(typeof window !== 'undefined' ? window.innerWidth : 1920);
@@ -171,8 +174,13 @@
 	$effect(() => {
 		if (typeof window === 'undefined') return;
 
-		// Mark as mounted to enable animation classes (avoids SSR hydration mismatch)
+		// Phase 1: Add animation class (sets initial hidden state)
 		mounted = true;
+
+		// Phase 2: Add transition class after DOM update (allows browser to register initial state first)
+		tick().then(() => {
+			ready = true;
+		});
 
 		function handleResize() {
 			windowWidth = window.innerWidth;
@@ -182,8 +190,9 @@
 		return () => window.removeEventListener('resize', handleResize);
 	});
 
-	$effect.pre(() => {
-		if (!container || !effectiveOptions.enabled) return;
+	// Set up observer only after ready - ensures transition class is in DOM first
+	$effect(() => {
+		if (!container || !effectiveOptions.enabled || !ready) return;
 
 		if (IntersectionObserver) {
 			return intersection_verify();
@@ -208,10 +217,10 @@
 				? effectiveOptions.delay
 				: 0}ms"
 			class={[
-				mounted ? easing : 'aos-ssr-hidden',
-				mounted && animation,
+				ready ? easing : '',
+				mounted ? animation : 'aos-ssr-hidden',
 				className.animate,
-				observing ? 'aos-animate pointer-events-auto' : 'pointer-events-none'
+				observing && ready ? 'aos-animate pointer-events-auto' : 'pointer-events-none'
 			]}
 		>
 			{@render children()}
