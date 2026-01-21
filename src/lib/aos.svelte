@@ -65,6 +65,9 @@
 		...props
 	}: ContainerProps = $props();
 
+	// Track if we're mounted (client-side) to avoid SSR hydration mismatches
+	let mounted = $state(false);
+
 	// Window width tracking for responsive breakpoints
 	let windowWidth = $state(typeof window !== 'undefined' ? window.innerWidth : 1920);
 
@@ -164,9 +167,12 @@
 		onupdate(observing);
 	});
 
-	// Resize listener for responsive breakpoints
+	// Resize listener for responsive breakpoints + set mounted on client
 	$effect(() => {
 		if (typeof window === 'undefined') return;
+
+		// Mark as mounted to enable animation classes (avoids SSR hydration mismatch)
+		mounted = true;
 
 		function handleResize() {
 			windowWidth = window.innerWidth;
@@ -202,8 +208,8 @@
 				? effectiveOptions.delay
 				: 0}ms"
 			class={[
-				easing,
-				animation,
+				mounted ? easing : 'aos-ssr-hidden',
+				mounted && animation,
 				className.animate,
 				observing ? 'aos-animate pointer-events-auto' : 'pointer-events-none'
 			]}
@@ -226,5 +232,10 @@
 
 	.pointer-events-auto {
 		pointer-events: auto;
+	}
+
+	/* Hide element during SSR to prevent flash before animation class is applied */
+	.aos-ssr-hidden {
+		opacity: 0;
 	}
 </style>
