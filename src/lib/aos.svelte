@@ -70,15 +70,24 @@
 
 	// Get the active breakpoint based on current window width (desktop-first)
 	function getActiveBreakpoint(width: number): BreakpointKey | null {
-		// Check breakpoints from smallest to largest
-		// Desktop-first: apply when width <= threshold
-		const breakpointOrder: BreakpointKey[] = ['sm', 'md', 'lg', 'xl', '2xl'];
+		if (!breakpoints) return null;
 
-		for (const bp of breakpointOrder) {
-			if (width <= BREAKPOINTS[bp] && breakpoints?.[bp]) {
+		// Get defined breakpoints and sort by threshold (smallest to largest)
+		const definedBreakpoints = (Object.keys(breakpoints) as BreakpointKey[])
+			.filter((bp) => breakpoints![bp] !== undefined)
+			.sort((a, b) => BREAKPOINTS[a] - BREAKPOINTS[b]);
+
+		if (definedBreakpoints.length === 0) return null;
+
+		// Desktop-first: find the smallest defined breakpoint whose threshold >= width
+		// This cascades settings down - e.g., defining only "lg" applies to sm, md, and lg
+		for (const bp of definedBreakpoints) {
+			if (width <= BREAKPOINTS[bp]) {
 				return bp;
 			}
 		}
+
+		// Width is larger than all defined breakpoints - no override applies
 		return null;
 	}
 
