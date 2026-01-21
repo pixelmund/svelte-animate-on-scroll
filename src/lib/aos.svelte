@@ -141,8 +141,7 @@
 		if (!container) return;
 		const c = container.getBoundingClientRect();
 		observing =
-			c.top + effectiveOptions.top < window.innerHeight &&
-			c.bottom - effectiveOptions.bottom > 0;
+			c.top + effectiveOptions.top < window.innerHeight && c.bottom - effectiveOptions.bottom > 0;
 
 		if (observing && effectiveOptions.once) {
 			window.removeEventListener('scroll', bounding_verify);
@@ -190,7 +189,9 @@
 		{...props}
 	>
 		<div
-			style="transition-duration: {effectiveOptions.duration}ms; transition-delay: {observing ? effectiveOptions.delay : 0}ms"
+			style="transition-duration: {effectiveOptions.duration}ms; transition-delay: {observing
+				? effectiveOptions.delay
+				: 0}ms"
 			class={[
 				easing,
 				animation,
@@ -202,7 +203,11 @@
 		</div>
 	</div>
 {:else}
-	{@render children()}
+	<div bind:this={container} class={[className.container]} {...props}>
+		<div class={[className.animate]}>
+			{@render children()}
+		</div>
+	</div>
 {/if}
 
 <style>
