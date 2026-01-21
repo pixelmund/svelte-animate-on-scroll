@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tick, type Snippet } from 'svelte';
+	import { type Snippet } from 'svelte';
 	import { type Easing, type Animations, easings, animations } from './css/index.js';
 	import type { HTMLAttributes } from 'svelte/elements';
 
@@ -177,17 +177,20 @@
 		// Phase 1: Add animation class (sets initial hidden state)
 		mounted = true;
 
-		// Phase 2: Add transition class after DOM update (allows browser to register initial state first)
-		tick().then(() => {
+		// Phase 2: Small delay ensures browser has painted initial state before enabling transitions
+		const timeoutId = setTimeout(() => {
 			ready = true;
-		});
+		}, 100);
 
 		function handleResize() {
 			windowWidth = window.innerWidth;
 		}
 
 		window.addEventListener('resize', handleResize);
-		return () => window.removeEventListener('resize', handleResize);
+		return () => {
+			clearTimeout(timeoutId);
+			window.removeEventListener('resize', handleResize);
+		};
 	});
 
 	// Set up observer only after ready - ensures transition class is in DOM first
